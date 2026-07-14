@@ -71,6 +71,9 @@ func newOrgMprisMediaPlayer2PlayerEventHandler(
 			"PlaybackStatus",
 			"Rate",
 		},
+		onPositionProps: []string{
+			"Position",
+		},
 		onPlayPauseProps: []string{"PlaybackStatus"},
 		onTitleProps:     []string{"Metadata"},
 		onSeekProps:      []string{"Position"},
@@ -87,6 +90,7 @@ type orgMprisMediaPlayer2PlayerEventHandler struct {
 	onEndedProps     []string
 	onVolumeProps    []string
 	onPlaybackProps  []string
+	onPositionProps  []string
 	onPlayPauseProps []string
 	onTitleProps     []string
 	onSeekProps      []string
@@ -130,6 +134,10 @@ func (o *orgMprisMediaPlayer2PlayerEventHandler) OnSeek(position types.Microseco
 	}
 	o.mpris.Conn.Emit("/org/mpris/MediaPlayer2", o.iface+".Seeked", int64(position))
 	return o.EmitChanges(o.onSeekProps)
+}
+
+func (o *orgMprisMediaPlayer2PlayerEventHandler) OnPosition() error {
+	return o.EmitChanges(o.onPositionProps)
 }
 
 func (o *orgMprisMediaPlayer2PlayerEventHandler) OnOptions() error {

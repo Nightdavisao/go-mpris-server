@@ -143,6 +143,7 @@ type OrgMprisMediaPlayer2PlayerEventHandler interface {
 	OnEnded() error
 	OnVolume() error
 	OnPlayback() error
+	OnPosition() error
 	OnPlayPause() error
 	OnTitle() error
 	OnSeek(position Microseconds) error
