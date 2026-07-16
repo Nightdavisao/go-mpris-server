@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
@@ -14,6 +15,8 @@ type Server struct {
 	RootAdapter   types.OrgMprisMediaPlayer2Adapter
 	PlayerAdapter types.OrgMprisMediaPlayer2PlayerAdapter
 	stop          chan bool
+	ready         chan struct{}
+	readyOnce     sync.Once
 }
 
 // Create a new server with a given name and initialize needed data.
@@ -27,8 +30,13 @@ func NewServer(
 		RootAdapter:   rootAdapter,
 		PlayerAdapter: playerAdapter,
 		stop:          make(chan bool, 1),
+		ready:         make(chan struct{}),
 	}
 	return &server
+}
+
+func (s *Server) Ready() <-chan struct{} {
+	return s.ready
 }
 
 func (s *Server) exportMethods() error {
@@ -45,18 +53,20 @@ func (s *Server) Listen() error {
 		return err
 	}
 	s.Conn = conn
-	reply, err := s.Conn.RequestName(s.serviceName, dbus.NameFlagReplaceExisting)
-	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
-		s.Conn.Close()
-		return errors.New("Unable to claim " + s.serviceName)
-	}
 	err = s.exportMethods()
 	if err != nil {
 		s.Conn.ReleaseName(s.serviceName)
 		s.Conn.Close()
 		return err
 	}
-	<-s.stop
+	reply, err := s.Conn.RequestName(s.serviceName, dbus.NameFlagReplaceExisting)
+	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
+		s.Conn.Close()
+		return errors.New("Unable to claim " + s.serviceName)
+	}
+	s.readyOnce.Do(func() {
+		close(s.ready)
+	})
 	return nil
 }
 

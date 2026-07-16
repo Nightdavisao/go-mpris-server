@@ -43,7 +43,7 @@ func (p *OrgMprisMediaPlayer2Player) Seek(offset int64) *dbus.Error {
 	return makeError(p.Adapter.Seek(types.Microseconds(offset)))
 }
 
-func (p *OrgMprisMediaPlayer2Player) SetPosition(trackId string, position int64) *dbus.Error {
+func (p *OrgMprisMediaPlayer2Player) SetPosition(trackId dbus.ObjectPath, position int64) *dbus.Error {
 	return makeError(p.Adapter.SetPosition(trackId, types.Microseconds(position)))
 }
 

@@ -36,7 +36,7 @@ type OrgMprisMediaPlayer2PlayerAdapter interface {
 	Stop() error
 	Play() error
 	Seek(offset Microseconds) error
-	SetPosition(trackId string, position Microseconds) error
+	SetPosition(trackId dbus.ObjectPath, position Microseconds) error
 	OpenUri(uri string) error
 	PlaybackStatus() (PlaybackStatus, error)
 	Rate() (float64, error)
@@ -93,30 +93,76 @@ type Metadata struct {
 }
 
 func (m *Metadata) MakeMap() map[string]dbus.Variant {
-	return map[string]dbus.Variant{
-		"mpris:trackid":        dbus.MakeVariant(m.TrackId),
-		"mpris:length":         dbus.MakeVariant(m.Length),
-		"mpris:artUrl":         dbus.MakeVariant(m.ArtUrl),
-		"xesam:album":          dbus.MakeVariant(m.Album),
-		"xesam:albumArtist":    dbus.MakeVariant(m.AlbumArtist),
-		"xesam:artist":         dbus.MakeVariant(m.Artist),
-		"xesam:asText":         dbus.MakeVariant(m.AsText),
-		"xesam:audioBPM":       dbus.MakeVariant(m.AudioBPM),
-		"xesam:autoRating":     dbus.MakeVariant(m.AutoRating),
-		"xesam:comment":        dbus.MakeVariant(m.Comment),
-		"xesam:composer":       dbus.MakeVariant(m.Composer),
-		"xesam:contentCreated": dbus.MakeVariant(m.ContentCreated),
-		"xesam:discNumber":     dbus.MakeVariant(m.DiscNumber),
-		"xesam:firstUsed":      dbus.MakeVariant(m.FirstUsed),
-		"xesam:genre":          dbus.MakeVariant(m.Genre),
-		"xesam:lastUsed":       dbus.MakeVariant(m.LastUsed),
-		"xesam:lyricist":       dbus.MakeVariant(m.Lyricist),
-		"xesam:title":          dbus.MakeVariant(m.Title),
-		"xesam:trackNumber":    dbus.MakeVariant(m.TrackNumber),
-		"xesam:url":            dbus.MakeVariant(m.Url),
-		"xesam:useCount":       dbus.MakeVariant(m.UseCount),
-		"xesam:userRating":     dbus.MakeVariant(m.UserRating),
+	metadataMap := make(map[string]dbus.Variant)
+
+	if m.TrackId.IsValid() {
+		metadataMap["mpris:trackid"] = dbus.MakeVariant(m.TrackId)
 	}
+	if m.Length >= 0 {
+		metadataMap["mpris:length"] = dbus.MakeVariant(m.Length)
+	}
+	if m.ArtUrl != "" {
+		metadataMap["mpris:artUrl"] = dbus.MakeVariant(m.ArtUrl)
+	}
+	if m.Album != "" {
+		metadataMap["xesam:album"] = dbus.MakeVariant(m.Album)
+	}
+	if len(m.AlbumArtist) > 0 {
+		metadataMap["xesam:albumArtist"] = dbus.MakeVariant(m.AlbumArtist)
+	}
+	if len(m.Artist) > 0 {
+		metadataMap["xesam:artist"] = dbus.MakeVariant(m.Artist)
+	}
+	if m.AsText != "" {
+		metadataMap["xesam:asText"] = dbus.MakeVariant(m.AsText)
+	}
+	if m.AudioBPM > 0 {
+		metadataMap["xesam:audioBPM"] = dbus.MakeVariant(m.AudioBPM)
+	}
+	if m.AutoRating > 0 && m.AutoRating <= 1 {
+		metadataMap["xesam:autoRating"] = dbus.MakeVariant(m.AutoRating)
+	}
+	if len(m.Comment) > 0 {
+		metadataMap["xesam:comment"] = dbus.MakeVariant(m.Comment)
+	}
+	if len(m.Composer) > 0 {
+		metadataMap["xesam:composer"] = dbus.MakeVariant(m.Composer)
+	}
+	if m.ContentCreated != "" {
+		metadataMap["xesam:contentCreated"] = dbus.MakeVariant(m.ContentCreated)
+	}
+	if m.DiscNumber > 0 {
+		metadataMap["xesam:discNumber"] = dbus.MakeVariant(m.DiscNumber)
+	}
+	if m.FirstUsed != "" {
+		metadataMap["xesam:firstUsed"] = dbus.MakeVariant(m.FirstUsed)
+	}
+	if len(m.Genre) > 0 {
+		metadataMap["xesam:genre"] = dbus.MakeVariant(m.Genre)
+	}
+	if m.LastUsed != "" {
+		metadataMap["xesam:lastUsed"] = dbus.MakeVariant(m.LastUsed)
+	}
+	if len(m.Lyricist) > 0 {
+		metadataMap["xesam:lyricist"] = dbus.MakeVariant(m.Lyricist)
+	}
+	if m.Title != "" {
+		metadataMap["xesam:title"] = dbus.MakeVariant(m.Title)
+	}
+	if m.TrackNumber > 0 {
+		metadataMap["xesam:trackNumber"] = dbus.MakeVariant(m.TrackNumber)
+	}
+	if m.Url != "" {
+		metadataMap["xesam:url"] = dbus.MakeVariant(m.Url)
+	}
+	if m.UseCount > 0 {
+		metadataMap["xesam:useCount"] = dbus.MakeVariant(m.UseCount)
+	}
+	if m.UserRating > 0 && m.UserRating <= 1 {
+		metadataMap["xesam:userRating"] = dbus.MakeVariant(m.UserRating)
+	}
+
+	return metadataMap
 }
 
 type PlaybackStatus string
